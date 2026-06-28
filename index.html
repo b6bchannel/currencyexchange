@@ -13,7 +13,7 @@
             --bg: #E0E5EC;
             --text-dark: #4D5E7C;
             --text-light: #9BAAC6;
-            --shadow-light: rgba(255,255,255, 0.8);
+            --shadow-light: rgba(255,255,255, 0.9);
             --shadow-dark: rgba(163,177,198, 0.6);
         }
         * {
@@ -29,10 +29,10 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+            padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
         }
         header {
-            padding: 30px 0 10px;
+            padding: 30px 20px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -43,72 +43,100 @@
             letter-spacing: 1px;
             color: var(--text-dark);
         }
-        .add-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--bg);
-            border: none;
-            color: var(--text-dark);
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .add-btn:active {
-            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
-        }
+        
+        /* 彻底修复阴影一刀切：增加极致的上下内边距，利用负边距保持视觉对齐 */
         .cards-container {
             flex: 1;
             overflow-y: auto;
-            padding: 25px 5px 40px;
-            margin: 0 -5px; 
+            padding: 40px 20px 60px;
+            margin: -20px 0; 
             scrollbar-width: none;
         }
         .cards-container::-webkit-scrollbar { display: none; }
         
-        .card {
+        /* 双层轨道设计：外层容器 */
+        .swipe-wrapper {
+            position: relative;
+            margin-bottom: 28px;
+            border-radius: 20px;
+            transition: transform 0.1s;
+        }
+        .swipe-wrapper.sorting {
+            opacity: 0.95;
+            z-index: 100;
+            /* 拖拽时的强阴影反馈 */
+            box-shadow: 15px 15px 30px var(--shadow-dark), -15px -15px 30px var(--shadow-light);
+        }
+
+        /* 底层轨道：放置操作按钮 */
+        .actions-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg);
             border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: 7px 7px 15px var(--shadow-dark), -7px -7px 15px var(--shadow-light);
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            z-index: 1;
+        }
+        .action-btn {
+            width: 44px; height: 44px; 
+            border-radius: 50%;
+            border: none; 
+            background: var(--bg);
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            font-size: 24px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .action-btn.add { color: #34c759; }
+        .action-btn.del { color: #ff3b30; }
+        .action-btn:active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+        }
+
+        /* 顶层卡片 */
+        .card-content {
+            background: var(--bg);
+            border-radius: 20px;
+            padding: 22px 20px;
+            box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
             display: flex;
             align-items: center;
             position: relative;
-            transition: transform 0.3s ease;
+            z-index: 2;
+            width: 100%;
+            /* 保证拖拽手势优先级，禁用内部元素的默认选择 */
+            user-select: none;
         }
         
-        /* 货币与时间信息的组合容器 */
         .currency-info {
             display: flex;
             flex-direction: column;
-            width: 75px;
+            width: 105px;
         }
         .currency-label {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 800;
             color: var(--text-dark);
         }
         .currency-time {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--text-light);
-            margin-top: 4px;
-            letter-spacing: 0.5px;
+            margin-top: 6px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
         }
 
         .input-wrapper {
             flex: 1;
             margin-left: 10px;
-            margin-right: 0; 
             border-radius: 12px;
             box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
             padding: 12px 15px;
-            transition: all 0.3s ease;
         }
         input[type="number"] {
             width: 100%;
@@ -122,54 +150,20 @@
         }
         input[type="number"]::-webkit-inner-spin-button, 
         input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        
-        .delete-btn {
-            position: absolute;
-            right: 20px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--bg);
-            border: none;
-            color: #ff4d4f;
-            font-size: 18px;
-            font-weight: bold;
-            box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transform: scale(0.5);
-            pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .delete-btn:active {
-            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            -webkit-appearance: none; margin: 0; 
         }
 
-        .card.show-delete .delete-btn {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-        }
-        .card.show-delete .input-wrapper {
-            margin-right: 45px; 
-        }
-
+        /* 货币选择器悬浮窗 */
         .picker-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(224, 229, 236, 0.85);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 100;
+            z-index: 200;
         }
         .picker-card {
             background: var(--bg);
@@ -192,19 +186,11 @@
             margin-bottom: 25px;
             appearance: none;
         }
-        .picker-btns {
-            display: flex;
-            justify-content: space-between;
-        }
+        .picker-btns { display: flex; justify-content: space-between; }
         .picker-btns button {
-            flex: 1;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            background: var(--bg);
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--text-dark);
+            flex: 1; padding: 14px; border-radius: 12px;
+            border: none; background: var(--bg);
+            font-size: 16px; font-weight: bold; color: var(--text-dark);
             box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
             margin: 0 8px;
         }
@@ -212,30 +198,27 @@
             box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
         }
         .status {
-            text-align: center;
-            font-size: 12px;
-            color: var(--text-light);
-            padding-bottom: 10px;
+            text-align: center; font-size: 11px;
+            color: var(--text-light); padding-bottom: 15px;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Exchange & Time</h1>
-        <button class="add-btn" onclick="openPicker()">+</button>
-    </header>
+        <h1>Exchange</h1>
+        <div style="width: 40px;"></div> </header>
     
     <div class="cards-container" id="cards">
         </div>
     
-    <div class="status" id="status-text">右滑删除卡片 · 左滑添加货币</div>
+    <div class="status" id="status-text">左滑添加 · 右滑删除 · 长按拖拽排序</div>
 
     <div class="picker-overlay" id="picker">
         <div class="picker-card">
             <select id="currency-select"></select>
             <div class="picker-btns">
                 <button onclick="closePicker()">取消</button>
-                <button onclick="addCurrency()" style="color: #007aff;">添加</button>
+                <button onclick="addCurrency()" style="color: #34c759;">添加</button>
             </div>
         </div>
     </div>
@@ -252,39 +235,34 @@
             'KRW': '韩元', 'PLN': '波兰币', 'CHF': '瑞士法郎', 'NZD': '新西兰元'
         };
 
-        // 为各个货币配置对应的目标时区
         const timeZoneMap = {
-            'CNY': 'Asia/Shanghai', 
-            'USD': 'America/New_York', 
-            'EUR': 'Europe/Berlin',
-            'JPY': 'Asia/Tokyo', 
-            'GBP': 'Europe/London', 
-            'HKD': 'Asia/Hong_Kong',
-            'TWD': 'Asia/Taipei', 
-            'SGD': 'Asia/Singapore', 
-            'AUD': 'Australia/Sydney',
-            'CAD': 'America/Toronto', 
-            'VND': 'Asia/Ho_Chi_Minh', 
-            'THB': 'Asia/Bangkok',
-            'KRW': 'Asia/Seoul', 
-            'PLN': 'Europe/Warsaw', 
-            'CHF': 'Europe/Zurich', 
+            'CNY': 'Asia/Shanghai', 'USD': 'America/New_York', 'EUR': 'Europe/Berlin',
+            'JPY': 'Asia/Tokyo', 'GBP': 'Europe/London', 'HKD': 'Asia/Hong_Kong',
+            'TWD': 'Asia/Taipei', 'SGD': 'Asia/Singapore', 'AUD': 'Australia/Sydney',
+            'CAD': 'America/Toronto', 'VND': 'Asia/Ho_Chi_Minh', 'THB': 'Asia/Bangkok',
+            'KRW': 'Asia/Seoul', 'PLN': 'Europe/Warsaw', 'CHF': 'Europe/Zurich', 
             'NZD': 'Pacific/Auckland'
         };
 
-        // 获取指定时区的当前时间 (格式 HH:MM)
+        // 格式化输出: 03:48 PM GMT+8
         function getLocalTime(currency) {
             const tz = timeZoneMap[currency];
             if (!tz) return '--:--';
-            return new Intl.DateTimeFormat('zh-CN', { 
-                timeZone: tz, 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                hour12: false 
-            }).format(new Date());
+            try {
+                const formatter = new Intl.DateTimeFormat('en-US', { 
+                    timeZone: tz, 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: true,
+                    timeZoneName: 'shortOffset' // 获取 GMT+8
+                });
+                // 移除英文格式中默认的逗号
+                return formatter.format(new Date()).replace(/,/g, '');
+            } catch (e) {
+                return '--:--';
+            }
         }
 
-        // 定时更新时间显示（每 10 秒刷新一次，保证分钟跳转无延迟感）
         setInterval(() => {
             document.querySelectorAll('.currency-time').forEach(el => {
                 const currency = el.getAttribute('data-currency');
@@ -298,13 +276,10 @@
                 const data = await res.json();
                 rates = data.usd; 
                 
-                if(rates['cny']) {
-                    baseUSDValue = 1000 / rates['cny']; 
-                }
+                if(rates['cny']) baseUSDValue = 1000 / rates['cny']; 
                 renderCards();
-                populateSelect();
             } catch (err) {
-                document.getElementById('status-text').innerText = '数据更新失败，请检查网络';
+                document.getElementById('status-text').innerText = '数据同步失败';
             }
         }
 
@@ -316,36 +291,44 @@
                 const rateKey = currency.toLowerCase();
                 const rateToUSD = rates[rateKey] || 1;
                 const displayValue = (baseUSDValue * rateToUSD).toFixed(2);
-                const currentTime = getLocalTime(currency);
                 
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.dataset.currency = currency;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'swipe-wrapper';
+                wrapper.dataset.currency = currency;
                 
-                // 将代码和时间包裹在 currency-info 中
-                card.innerHTML = `
-                    <div class="currency-info">
-                        <div class="currency-label">${currency}</div>
-                        <div class="currency-time" data-currency="${currency}">${currentTime}</div>
+                // 双层解耦结构：底层按键 + 顶层卡片
+                wrapper.innerHTML = `
+                    <div class="actions-bg">
+                        <button class="action-btn add" onclick="openPicker()">+</button>
+                        <button class="action-btn del" onclick="removeCurrency('${currency}')">✕</button>
                     </div>
-                    <div class="input-wrapper">
-                        <input type="number" inputmode="decimal" 
-                               data-currency="${currency}" 
-                               value="${displayValue}">
+                    <div class="card-content">
+                        <div class="currency-info">
+                            <div class="currency-label">${currency}</div>
+                            <div class="currency-time" data-currency="${currency}">${getLocalTime(currency)}</div>
+                        </div>
+                        <div class="input-wrapper">
+                            <input type="number" inputmode="decimal" 
+                                   data-currency="${currency}" 
+                                   value="${displayValue}">
+                        </div>
                     </div>
-                    ${activeCards.length > 2 ? `<button class="delete-btn" onclick="removeCurrency('${currency}')">✕</button>` : ''}
                 `;
-                container.appendChild(card);
+                
+                // 绑定复杂的原生触摸事件
+                bindTouchEvents(wrapper);
+                container.appendChild(wrapper);
             });
 
             document.querySelectorAll('input').forEach(input => {
                 input.addEventListener('input', handleInput);
                 input.addEventListener('focus', function() { 
                     this.value = ''; 
-                    this.closest('.card').classList.remove('show-delete');
+                    // 输入时强制所有卡片复位
+                    document.querySelectorAll('.card-content').forEach(c => c.style.transform = 'translateX(0)');
                 });
                 input.addEventListener('blur', function() {
-                    if(this.value === '') { renderCards(); }
+                    if(this.value === '') renderCards();
                 });
             });
         }
@@ -353,11 +336,9 @@
         function handleInput(e) {
             const currency = e.target.getAttribute('data-currency').toLowerCase();
             const value = parseFloat(e.target.value);
-            
             if (isNaN(value)) return;
 
             baseUSDValue = value / rates[currency];
-
             document.querySelectorAll('input').forEach(input => {
                 const targetCurrency = input.getAttribute('data-currency').toLowerCase();
                 if (targetCurrency !== currency) {
@@ -371,29 +352,28 @@
             renderCards();
         }
 
-        function populateSelect() {
+        function openPicker() {
             const select = document.getElementById('currency-select');
             select.innerHTML = '';
+            let count = 0;
             Object.keys(allCurrencies).forEach(code => {
                 if (!activeCards.includes(code)) {
                     select.innerHTML += `<option value="${code}">${code} - ${allCurrencies[code]}</option>`;
+                    count++;
                 }
             });
-        }
-
-        function openPicker() {
-            populateSelect();
-            if (document.getElementById('currency-select').options.length === 0) {
-                alert('所有币种已添加');
+            
+            // 归位所有滑动状态
+            document.querySelectorAll('.card-content').forEach(c => c.style.transform = 'translateX(0)');
+            
+            if (count === 0) {
+                alert('已添加所有可用币种');
                 return;
             }
             document.getElementById('picker').style.display = 'flex';
         }
 
-        function closePicker() {
-            document.getElementById('picker').style.display = 'none';
-        }
-
+        function closePicker() { document.getElementById('picker').style.display = 'none'; }
         function addCurrency() {
             const select = document.getElementById('currency-select');
             if(select.value) {
@@ -403,38 +383,115 @@
             closePicker();
         }
 
-        // 手势交互逻辑
-        let startX = 0;
-        let startY = 0;
-        
-        document.addEventListener('touchstart', e => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-        }, {passive: true});
+        // ================= 核心手势逻辑 (微信滑动 + 长按拖拽) =================
+        function bindTouchEvents(wrapper) {
+            const cardContent = wrapper.querySelector('.card-content');
+            let startX = 0, startY = 0;
+            let isSwiping = false, isSorting = false;
+            let longPressTimer;
+            let initialIndex = 0;
 
-        document.addEventListener('touchend', e => {
-            let endX = e.changedTouches[0].clientX;
-            let endY = e.changedTouches[0].clientY;
-            
-            if (Math.abs(endX - startX) > Math.abs(endY - startY)) {
-                const diff = endX - startX;
-                const card = e.target.closest('.card');
+            wrapper.addEventListener('touchstart', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
                 
-                if (diff > 50) {
-                    document.querySelectorAll('.card').forEach(c => c.classList.remove('show-delete'));
-                    if (card && activeCards.length > 2) {
-                        card.classList.add('show-delete');
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                
+                // 将其他卡片归位
+                document.querySelectorAll('.card-content').forEach(c => {
+                    if (c !== cardContent) {
+                        c.style.transition = 'transform 0.3s ease';
+                        c.style.transform = 'translateX(0)';
                     }
-                } 
-                else if (diff < -50) {
-                    if (card && card.classList.contains('show-delete')) {
-                        card.classList.remove('show-delete');
-                    } else {
-                        openPicker();
+                });
+
+                // 启动长按检测 (1秒)
+                longPressTimer = setTimeout(() => {
+                    if (!isSwiping) {
+                        isSorting = true;
+                        wrapper.classList.add('sorting');
+                        initialIndex = activeCards.indexOf(wrapper.dataset.currency);
+                        if (navigator.vibrate) navigator.vibrate(50);
                     }
+                }, 1000);
+            }, { passive: false });
+
+            wrapper.addEventListener('touchmove', (e) => {
+                const dx = e.touches[0].clientX - startX;
+                const dy = e.touches[0].clientY - startY;
+
+                // 若移动超过阈值，取消长按判定
+                if (!isSorting && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+                    clearTimeout(longPressTimer);
                 }
-            }
-        }, {passive: true});
+
+                // 处理排序拖拽
+                if (isSorting) {
+                    e.preventDefault(); 
+                    wrapper.style.transform = `translateY(${dy}px) scale(1.02)`;
+                    return;
+                }
+
+                // 处理横向滑动
+                if (!isSwiping && Math.abs(dx) > Math.abs(dy) + 5) {
+                    isSwiping = true;
+                }
+
+                if (isSwiping) {
+                    e.preventDefault(); // 阻止页面上下滚动
+                    let tx = dx;
+                    // 增加阻尼感
+                    if (tx > 80) tx = 80 + (tx - 80) * 0.2;
+                    if (tx < -80) tx = -80 + (tx + 80) * 0.2;
+                    
+                    cardContent.style.transition = 'none';
+                    cardContent.style.transform = `translateX(${tx}px)`;
+                }
+            }, { passive: false });
+
+            wrapper.addEventListener('touchend', (e) => {
+                clearTimeout(longPressTimer);
+                
+                // 拖拽排序结束逻辑
+                if (isSorting) {
+                    const endY = e.changedTouches[0].clientY;
+                    wrapper.style.transform = '';
+                    wrapper.classList.remove('sorting');
+                    
+                    // 获取当前手指位置下的其他卡片
+                    const elements = document.elementsFromPoint(window.innerWidth / 2, endY);
+                    const targetWrapper = elements.find(el => el.classList.contains('swipe-wrapper') && el !== wrapper);
+                    
+                    if (targetWrapper) {
+                        const targetCurrency = targetWrapper.dataset.currency;
+                        const targetIndex = activeCards.indexOf(targetCurrency);
+                        const currency = wrapper.dataset.currency;
+                        
+                        // 在数据中更新顺序
+                        activeCards.splice(initialIndex, 1);
+                        activeCards.splice(targetIndex, 0, currency);
+                    }
+                    renderCards(); // 重新渲染以固定新顺序
+                    isSorting = false;
+                    return;
+                }
+
+                // 横向滑动结束逻辑 (吸附)
+                if (isSwiping) {
+                    const dx = e.changedTouches[0].clientX - startX;
+                    cardContent.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    
+                    if (dx > 50) {
+                        cardContent.style.transform = `translateX(70px)`; // 右滑露出添加键
+                    } else if (dx < -50) {
+                        cardContent.style.transform = `translateX(-70px)`; // 左滑露出删除键
+                    } else {
+                        cardContent.style.transform = `translateX(0)`; // 归位
+                    }
+                    isSwiping = false;
+                }
+            });
+        }
 
         init();
     </script>
