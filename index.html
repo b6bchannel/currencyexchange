@@ -7,12 +7,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Currency">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23E0E5EC'/><text x='50' y='68' font-size='55' font-family='-apple-system, sans-serif' font-weight='800' text-anchor='middle' fill='%234D5E7C'>$</text></svg>">
+    
+    <link rel="icon" type="image/png" href="./icon.png">
+    <link rel="apple-touch-icon" href="./icon.png">
     
     <style>
         :root {
             --bg: #E0E5EC;
-            --input-bg: #D5DFEB; /* 加深输入框颜色以作区分 */
+            --input-bg: #D5DFEB; 
             --text-dark: #4D5E7C;
             --text-light: #9BAAC6;
             --shadow-light: rgba(255,255,255, 0.9);
@@ -51,20 +53,12 @@
             gap: 15px;
         }
         .icon-btn {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: var(--bg);
-            border: none;
-            color: var(--text-dark);
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 42px; height: 42px; border-radius: 50%;
+            background: var(--bg); border: none;
+            color: var(--text-dark); font-size: 20px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
             box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
-            cursor: pointer;
-            transition: all 0.2s ease;
+            cursor: pointer; transition: all 0.2s ease;
         }
         .icon-btn:active {
             box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
@@ -80,32 +74,23 @@
         .cards-container::-webkit-scrollbar { display: none; }
         
         .swipe-wrapper {
-            position: relative;
-            margin-bottom: 28px;
-            border-radius: 20px;
+            position: relative; margin-bottom: 28px; border-radius: 20px;
             transition: transform 0.1s;
         }
 
         .actions-bg {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--bg);
-            border-radius: 20px;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg); border-radius: 20px;
             box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 15px;
-            z-index: 1;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px; z-index: 1;
         }
         .action-btn {
-            width: 44px; height: 44px; 
-            border-radius: 50%; border: none; 
+            width: 44px; height: 44px; border-radius: 50%; border: none; 
             background: var(--bg);
             box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
             font-size: 24px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
         .action-btn.add { color: #34c759; }
         .action-btn.del { color: #ff3b30; }
@@ -114,81 +99,43 @@
         }
 
         .card-content {
-            background: var(--bg);
-            border-radius: 20px;
-            padding: 22px 20px;
+            background: var(--bg); border-radius: 20px; padding: 22px 20px;
             box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
-            display: flex;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-            width: 100%;
+            display: flex; align-items: center; position: relative; z-index: 2; width: 100%;
         }
         
-        .currency-info {
-            display: flex;
-            flex-direction: column;
-            width: 105px;
-        }
-        .currency-label {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--text-dark);
-        }
+        .currency-info { display: flex; flex-direction: column; width: 105px; }
+        .currency-label { font-size: 22px; font-weight: 800; color: var(--text-dark); }
         .currency-time {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-light);
-            margin-top: 6px;
-            letter-spacing: 0.2px;
-            white-space: nowrap;
+            font-size: 11px; font-weight: 600; color: var(--text-light);
+            margin-top: 6px; letter-spacing: 0.2px; white-space: nowrap;
         }
 
         .input-wrapper {
-            flex: 1;
-            margin-left: 10px;
-            border-radius: 12px;
-            background-color: var(--input-bg); /* 区分度颜色 */
+            flex: 1; margin-left: 10px; border-radius: 12px;
+            background-color: var(--input-bg);
             box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
             padding: 12px 15px;
         }
         input[type="number"] {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-dark);
-            text-align: right;
-            outline: none;
+            width: 100%; border: none; background: transparent;
+            font-size: 24px; font-weight: 700; color: var(--text-dark);
+            text-align: right; outline: none;
         }
         input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; margin: 0; 
-        }
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-        /* 统一的浮层样式 */
         .overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(224, 229, 236, 0.85);
-            backdrop-filter: blur(10px);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(224, 229, 236, 0.85); backdrop-filter: blur(10px);
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 200;
         }
         .modal-card {
-            background: var(--bg);
-            border-radius: 24px;
-            padding: 25px;
-            width: 85%;
-            max-width: 380px;
+            background: var(--bg); border-radius: 24px; padding: 25px;
+            width: 85%; max-width: 380px;
             box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
         }
         
-        /* 添加货币浮层 */
         .modal-card select {
             width: 100%; padding: 15px; border-radius: 12px; border: none;
             background: var(--bg); color: var(--text-dark);
@@ -204,22 +151,12 @@
         }
         .modal-btns button:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
 
-        /* 排序浮层专属样式 */
         .sort-list-container {
-            max-height: 50vh;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            padding: 10px 5px;
-            scrollbar-width: none;
+            max-height: 50vh; overflow-y: auto; margin-bottom: 20px; padding: 10px 5px; scrollbar-width: none;
         }
         .sort-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            margin-bottom: 15px;
-            background: var(--bg);
-            border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; margin-bottom: 15px; background: var(--bg); border-radius: 16px;
             box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
         }
         .sort-item-label { font-size: 18px; font-weight: 700; color: var(--text-dark); }
@@ -229,7 +166,13 @@
         }
         .sort-controls button:active { opacity: 0.5; }
 
-        .status { text-align: center; font-size: 11px; color: var(--text-light); padding-bottom: 15px; }
+        /* 底部信息区域样式 */
+        .footer-info {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .status { font-size: 11px; color: var(--text-light); margin-bottom: 6px; }
+        .meta-info { font-size: 10px; color: var(--text-light); opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -241,10 +184,12 @@
         </div>
     </header>
     
-    <div class="cards-container" id="cards">
-        </div>
+    <div class="cards-container" id="cards"></div>
     
-    <div class="status" id="status-text">左滑添加 · 右滑删除</div>
+    <div class="footer-info">
+        <div class="status" id="status-text">左滑添加 · 右滑删除</div>
+        <div class="meta-info" id="meta-info">正在获取最新汇率数据...</div>
+    </div>
 
     <div class="overlay" id="picker-overlay">
         <div class="modal-card">
@@ -258,8 +203,7 @@
 
     <div class="overlay" id="sort-overlay">
         <div class="modal-card">
-            <div class="sort-list-container" id="sort-list">
-                </div>
+            <div class="sort-list-container" id="sort-list"></div>
             <div class="modal-btns">
                 <button onclick="closeModal('sort-overlay')" style="color: #007aff; width: 100%;">完成</button>
             </div>
@@ -311,10 +255,16 @@
                 const res = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json');
                 const data = await res.json();
                 rates = data.usd; 
+                
+                // 提取 API 数据更新日期
+                const updateDate = data.date || "近期更新";
+                document.getElementById('meta-info').innerText = `更新于: ${updateDate} · 数据源: fawazahmed0`;
+
                 if(rates['cny']) baseUSDValue = 1000 / rates['cny']; 
                 renderCards();
             } catch (err) {
                 document.getElementById('status-text').innerText = '数据同步失败';
+                document.getElementById('meta-info').innerText = '请检查网络连接后重试';
             }
         }
 
@@ -384,10 +334,8 @@
             renderCards();
         }
 
-        // --- 浮层管理 ---
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // --- 添加货币功能 ---
         function openPicker() {
             const select = document.getElementById('currency-select');
             select.innerHTML = '';
@@ -409,7 +357,6 @@
             closeModal('picker-overlay');
         }
 
-        // --- 排序功能 ---
         function openSort() {
             renderSortList();
             document.querySelectorAll('.card-content').forEach(c => c.style.transform = 'translateX(0)');
@@ -435,13 +382,11 @@
         function moveItem(index, direction) {
             const newIndex = index + direction;
             if (newIndex < 0 || newIndex >= activeCards.length) return;
-            // 交换数组元素
             [activeCards[index], activeCards[newIndex]] = [activeCards[newIndex], activeCards[index]];
-            renderSortList(); // 刷新排序浮层
-            renderCards();    // 刷新底层 UI
+            renderSortList(); 
+            renderCards();    
         }
 
-        // --- 纯粹的左右滑动逻辑 ---
         function bindTouchEvents(wrapper) {
             const cardContent = wrapper.querySelector('.card-content');
             let startX = 0, startY = 0;
