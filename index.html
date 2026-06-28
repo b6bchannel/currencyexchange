@@ -34,6 +34,9 @@
             display: flex;
             flex-direction: column;
             padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+            /* 核心修复 1：彻底切断 iOS 系统级的横向回弹和侧滑干预 */
+            overflow-x: hidden;
+            overscroll-behavior-x: none;
         }
         header {
             padding: 30px 20px 10px;
@@ -48,10 +51,7 @@
             color: var(--text-dark);
         }
         
-        .header-actions {
-            display: flex;
-            gap: 15px;
-        }
+        .header-actions { display: flex; gap: 15px; }
         .icon-btn {
             width: 42px; height: 42px; border-radius: 50%;
             background: var(--bg); border: none;
@@ -67,6 +67,8 @@
         .cards-container {
             flex: 1;
             overflow-y: auto;
+            /* 核心修复 2：锁死容器自身的横向滚动条 */
+            overflow-x: hidden; 
             padding: 30px 20px 60px;
             margin: -20px 0; 
             scrollbar-width: none;
@@ -76,6 +78,8 @@
         .swipe-wrapper {
             position: relative; margin-bottom: 28px; border-radius: 20px;
             transition: transform 0.1s;
+            /* 核心修复 3：通知浏览器该元素只允许原生上下滚动，左右滑动全权由 JS 动画接管 */
+            touch-action: pan-y; 
         }
 
         .actions-bg {
@@ -166,11 +170,7 @@
         }
         .sort-controls button:active { opacity: 0.5; }
 
-        /* 底部信息区域样式 */
-        .footer-info {
-            text-align: center;
-            padding-bottom: 20px;
-        }
+        .footer-info { text-align: center; padding-bottom: 20px; }
         .status { font-size: 11px; color: var(--text-light); margin-bottom: 6px; }
         .meta-info { font-size: 10px; color: var(--text-light); opacity: 0.7; }
     </style>
@@ -256,7 +256,6 @@
                 const data = await res.json();
                 rates = data.usd; 
                 
-                // 提取 API 数据更新日期
                 const updateDate = data.date || "近期更新";
                 document.getElementById('meta-info').innerText = `更新于: ${updateDate} · 数据源: fawazahmed0`;
 
@@ -413,7 +412,7 @@
                 }
 
                 if (isSwiping) {
-                    e.preventDefault(); 
+                    e.preventDefault(); // 配合外部的 touch-action: pan-y，这里的阻止默认事件会非常稳定
                     let tx = dx;
                     if (tx > 80) tx = 80 + (tx - 80) * 0.2;
                     if (tx < -80) tx = -80 + (tx + 80) * 0.2;
