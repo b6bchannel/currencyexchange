@@ -250,14 +250,18 @@
             });
         }, 10000);
 
+       // 优化后的初始化逻辑
         async function init() {
             try {
                 const res = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json');
                 const data = await res.json();
                 rates = data.usd; 
                 
-                const updateDate = data.date || "近期更新";
-                document.getElementById('meta-info').innerText = `更新于: ${updateDate} · 数据源: fawazahmed0`;
+                // 仅显示时间点 (HH:MM)，且根据系统本地时区格式化
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                
+                document.getElementById('meta-info').innerText = `上次刷新: ${timeString} · 数据源: fawazahmed0`;
 
                 if(rates['cny']) baseUSDValue = 1000 / rates['cny']; 
                 renderCards();
