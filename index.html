@@ -103,30 +103,51 @@
     </div>
 
     <script>
-        // 核心修复 1：初始化时优先从 LocalStorage 提取所有历史状态
         let rates = JSON.parse(localStorage.getItem('cachedRates')) || {};
-        let activeCards = JSON.parse(localStorage.getItem('myCurrencies')) || ['CNY', 'USD', 'EUR', 'AUD']; 
+        let activeCards = JSON.parse(localStorage.getItem('myCurrencies')) || ['CNY', 'USD', 'EUR', 'JPY']; 
         
-        // 尝试获取上次关闭前输入的计算基准值，如果没有则赋默认值
         let baseUSDValue = parseFloat(localStorage.getItem('savedBaseValue'));
         if (isNaN(baseUSDValue)) {
-            baseUSDValue = 1000 / (rates['cny'] || 7.2); // 退化回退值
+            baseUSDValue = 1000 / (rates['cny'] || 7.2); 
         }
         
-        const allCurrencies = {
-            'CNY': '人民币', 'USD': '美元', 'EUR': '欧元', 'JPY': '日元', 
-            'GBP': '英镑', 'HKD': '港币', 'TWD': '新台币', 'SGD': '新加坡元',
-            'AUD': '澳元', 'CAD': '加币', 'VND': '越南盾', 'THB': '泰铢', 
-            'KRW': '韩元', 'PLN': '波兰币', 'CHF': '瑞士法郎', 'NZD': '新西兰元'
+        // 划区重构的全球货币库
+        const currencyCategories = {
+            "东亚 & 东南亚": {
+                'CNY': '人民币', 'HKD': '港币', 'MOP': '澳门元', 'TWD': '新台币', 
+                'JPY': '日元', 'KRW': '韩元', 'SGD': '新加坡元', 'THB': '泰铢', 
+                'VND': '越南盾', 'MYR': '马来西亚林吉特', 'IDR': '印尼盾', 'PHP': '菲律宾比索'
+            },
+            "欧洲": {
+                'EUR': '欧元', 'GBP': '英镑', 'CHF': '瑞士法郎', 'PLN': '波兰兹罗提',
+                'SEK': '瑞典克朗', 'NOK': '挪威克朗', 'DKK': '丹麦克朗', 'HUF': '匈牙利福林',
+                'CZK': '捷克克朗', 'TRY': '土耳其里拉'
+            },
+            "美洲": {
+                'USD': '美元', 'CAD': '加币', 'MXN': '墨西哥比索',
+                'BRL': '巴西雷亚尔', 'ARS': '阿根廷比索', 'CLP': '智利比索', 'COP': '哥伦比亚比索'
+            },
+            "大洋洲": {
+                'AUD': '澳元', 'NZD': '新西兰元', 'FJD': '斐济元'
+            },
+            "中东 & 非洲": {
+                'AED': '阿联酋迪拉姆', 'SAR': '沙特里亚尔', 'ZAR': '南非兰特', 'EGP': '埃及镑'
+            }
         };
 
+        // 扩充匹配的精准时区字典
         const timeZoneMap = {
-            'CNY': 'Asia/Shanghai', 'USD': 'America/New_York', 'EUR': 'Europe/Berlin',
-            'JPY': 'Asia/Tokyo', 'GBP': 'Europe/London', 'HKD': 'Asia/Hong_Kong',
-            'TWD': 'Asia/Taipei', 'SGD': 'Asia/Singapore', 'AUD': 'Australia/Sydney',
-            'CAD': 'America/Toronto', 'VND': 'Asia/Ho_Chi_Minh', 'THB': 'Asia/Bangkok',
-            'KRW': 'Asia/Seoul', 'PLN': 'Europe/Warsaw', 'CHF': 'Europe/Zurich', 
-            'NZD': 'Pacific/Auckland'
+            'CNY': 'Asia/Shanghai', 'HKD': 'Asia/Hong_Kong', 'MOP': 'Asia/Macau', 'TWD': 'Asia/Taipei',
+            'JPY': 'Asia/Tokyo', 'KRW': 'Asia/Seoul',
+            'SGD': 'Asia/Singapore', 'THB': 'Asia/Bangkok', 'VND': 'Asia/Ho_Chi_Minh', 'MYR': 'Asia/Kuala_Lumpur',
+            'IDR': 'Asia/Jakarta', 'PHP': 'Asia/Manila',
+            'EUR': 'Europe/Berlin', 'GBP': 'Europe/London', 'CHF': 'Europe/Zurich', 'PLN': 'Europe/Warsaw',
+            'SEK': 'Europe/Stockholm', 'NOK': 'Europe/Oslo', 'DKK': 'Europe/Copenhagen', 'HUF': 'Europe/Budapest',
+            'CZK': 'Europe/Prague', 'TRY': 'Europe/Istanbul',
+            'USD': 'America/New_York', 'CAD': 'America/Toronto', 'MXN': 'America/Mexico_City',
+            'BRL': 'America/Sao_Paulo', 'ARS': 'America/Argentina/Buenos_Aires', 'CLP': 'America/Santiago', 'COP': 'America/Bogota',
+            'AUD': 'Australia/Sydney', 'NZD': 'Pacific/Auckland', 'FJD': 'Pacific/Fiji',
+            'AED': 'Asia/Dubai', 'SAR': 'Asia/Riyadh', 'ZAR': 'Africa/Johannesburg', 'EGP': 'Africa/Cairo'
         };
 
         function getLocalTime(currency) {
@@ -149,15 +170,11 @@
         }, 10000);
 
         async function init() {
-            // 核心修复 2：只要本地有历史汇率，立刻零延迟渲染界面，拒绝白屏
-            if (Object.keys(rates).length > 0) {
-                renderCards();
-            }
+            if (Object.keys(rates).length > 0) { renderCards(); }
             await fetchRates();
         }
 
         async function fetchRates() {
-            // 核心修复 3：双节点容灾。主节点屏蔽时，静默切换到 Cloudflare 备用节点
             const primary = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json';
             const fallback = 'https://latest.currency-api.pages.dev/v1/currencies/usd.json';
             
@@ -165,7 +182,7 @@
                 let res;
                 try {
                     res = await fetch(primary);
-                    if (!res.ok) throw new Error('Primary API failed');
+                    if (!res.ok) throw new Error('Primary failed');
                 } catch (e) {
                     res = await fetch(fallback);
                 }
@@ -173,7 +190,6 @@
                 const data = await res.json();
                 rates = data.usd; 
                 
-                // 将全量汇率表备份到手机存储，用于离线模式
                 localStorage.setItem('cachedRates', JSON.stringify(rates));
                 
                 const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -181,10 +197,9 @@
                 
                 renderCards();
             } catch (err) {
-                // 网络彻底断开时的极致保底逻辑
                 if (Object.keys(rates).length > 0) {
                     document.getElementById('meta-info').innerText = '网络异常，当前使用本地离线数据';
-                    renderCards(); // 即使报错，只要有本地数据就强制渲染
+                    renderCards(); 
                 } else {
                     document.getElementById('status-text').innerText = '数据同步失败';
                     document.getElementById('meta-info').innerText = '首次加载需要网络，请检查网络连接';
@@ -198,7 +213,6 @@
         }
 
         function renderCards() {
-            // 实时保存卡片顺序到本地
             localStorage.setItem('myCurrencies', JSON.stringify(activeCards));
             
             const container = document.getElementById('cards');
@@ -253,8 +267,6 @@
             if (isNaN(value)) return;
 
             baseUSDValue = value / rates[currency];
-            
-            // 核心修复 4：实时记忆你输入的等值基准
             localStorage.setItem('savedBaseValue', baseUSDValue);
 
             document.querySelectorAll('input').forEach(input => {
@@ -276,12 +288,26 @@
             const select = document.getElementById('currency-select');
             select.innerHTML = '';
             let count = 0;
-            Object.keys(allCurrencies).forEach(code => {
-                if (!activeCards.includes(code)) {
-                    select.innerHTML += `<option value="${code}">${code} - ${allCurrencies[code]}</option>`;
-                    count++;
+            
+            // 使用 optgroup 渲染分组菜单
+            for (const [region, currencies] of Object.entries(currencyCategories)) {
+                let optgroupHTML = `<optgroup label="${region}">`;
+                let hasCurrencyInRegion = false;
+                
+                Object.keys(currencies).forEach(code => {
+                    if (!activeCards.includes(code)) {
+                        optgroupHTML += `<option value="${code}">${code} - ${currencies[code]}</option>`;
+                        hasCurrencyInRegion = true;
+                        count++;
+                    }
+                });
+                
+                optgroupHTML += `</optgroup>`;
+                if (hasCurrencyInRegion) {
+                    select.innerHTML += optgroupHTML;
                 }
-            });
+            }
+            
             document.querySelectorAll('.card-content').forEach(c => c.style.transform = 'translateX(0)');
             if (count === 0) { alert('已添加所有可用币种'); return; }
             document.getElementById('picker-overlay').style.display = 'flex';
