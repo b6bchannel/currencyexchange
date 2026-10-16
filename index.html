@@ -39,13 +39,15 @@
 
         .card-content { background: var(--bg); border-radius: 20px; padding: 22px 20px; box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light); display: flex; align-items: center; position: relative; z-index: 2; width: 100%; }
         
-        .currency-info { display: flex; flex-direction: column; width: 105px; }
+        .currency-info { display: flex; flex-direction: column; width: 105px; flex-shrink: 0; }
         .currency-label { font-size: 22px; font-weight: 800; color: var(--text-dark); }
         .currency-time { font-size: 11px; font-weight: 600; color: var(--text-light); margin-top: 6px; letter-spacing: 0.2px; white-space: nowrap; }
 
-        .input-wrapper { flex: 1; margin-left: 10px; border-radius: 12px; background-color: var(--input-bg); box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); padding: 12px 15px; }
+        .input-wrapper { flex: 1; min-width: 0; margin-left: 10px; border-radius: 12px; background-color: var(--input-bg); box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); padding: 12px 15px; }
         input[type="number"] { width: 100%; border: none; background: transparent; font-size: 24px; font-weight: 700; color: var(--text-dark); text-align: right; outline: none; }
         input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input:disabled { opacity: 1; }
+        input::placeholder { font-size: 12px; color: var(--text-light); }
 
         .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(224, 229, 236, 0.85); backdrop-filter: blur(10px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 200; }
         .modal-card { background: var(--bg); border-radius: 24px; padding: 25px; width: 85%; max-width: 380px; box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light); }
@@ -64,6 +66,10 @@
         .footer-info { text-align: center; padding-bottom: 20px; }
         .status { font-size: 11px; color: var(--text-light); margin-bottom: 6px; }
         .meta-info { font-size: 10px; color: var(--text-light); opacity: 0.7; }
+        @media (max-width: 360px) {
+            h1 { font-size: 22px; }
+            .header-actions { gap: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -107,8 +113,8 @@
         let activeCards = JSON.parse(localStorage.getItem('myCurrencies')) || ['CNY', 'USD', 'EUR', 'JPY']; 
         
         let baseUSDValue = parseFloat(localStorage.getItem('savedBaseValue'));
-        if (isNaN(baseUSDValue)) {
-            baseUSDValue = 1000 / (rates['cny'] || 7.2); 
+        if (!Number.isFinite(baseUSDValue)) {
+            baseUSDValue = 1000 / (getRate('CNY') || 7.2);
         }
         
         // 划区重构的全球货币库
@@ -116,22 +122,38 @@
             "东亚 & 东南亚": {
                 'CNY': '人民币', 'HKD': '港币', 'MOP': '澳门元', 'TWD': '新台币', 
                 'JPY': '日元', 'KRW': '韩元', 'SGD': '新加坡元', 'THB': '泰铢', 
-                'VND': '越南盾', 'MYR': '马来西亚林吉特', 'IDR': '印尼盾', 'PHP': '菲律宾比索'
+                'VND': '越南盾', 'MYR': '马来西亚林吉特', 'IDR': '印尼盾', 'PHP': '菲律宾比索',
+                'KHR': '柬埔寨瑞尔', 'LAK': '老挝基普', 'MNT': '蒙古图格里克'
+            },
+            "中亚": {
+                'KZT': '哈萨克斯坦坚戈', 'UZS': '乌兹别克斯坦苏姆', 'KGS': '吉尔吉斯斯坦索姆',
+                'TJS': '塔吉克斯坦索莫尼', 'TMT': '土库曼斯坦马纳特'
+            },
+            "南亚": {
+                'INR': '印度卢比', 'PKR': '巴基斯坦卢比', 'BDT': '孟加拉塔卡',
+                'LKR': '斯里兰卡卢比', 'NPR': '尼泊尔卢比'
             },
             "欧洲": {
                 'EUR': '欧元', 'GBP': '英镑', 'CHF': '瑞士法郎', 'PLN': '波兰兹罗提',
                 'SEK': '瑞典克朗', 'NOK': '挪威克朗', 'DKK': '丹麦克朗', 'HUF': '匈牙利福林',
-                'CZK': '捷克克朗', 'TRY': '土耳其里拉'
+                'CZK': '捷克克朗', 'TRY': '土耳其里拉', 'RUB': '俄罗斯卢布',
+                'RON': '罗马尼亚列伊', 'ISK': '冰岛克朗'
             },
             "美洲": {
                 'USD': '美元', 'CAD': '加币', 'MXN': '墨西哥比索',
-                'BRL': '巴西雷亚尔', 'ARS': '阿根廷比索', 'CLP': '智利比索', 'COP': '哥伦比亚比索'
+                'BRL': '巴西雷亚尔', 'ARS': '阿根廷比索', 'CLP': '智利比索', 'COP': '哥伦比亚比索',
+                'PEN': '秘鲁索尔'
             },
             "大洋洲": {
                 'AUD': '澳元', 'NZD': '新西兰元', 'FJD': '斐济元'
             },
-            "中东 & 非洲": {
-                'AED': '阿联酋迪拉姆', 'SAR': '沙特里亚尔', 'ZAR': '南非兰特', 'EGP': '埃及镑'
+            "中东": {
+                'AED': '阿联酋迪拉姆', 'SAR': '沙特里亚尔', 'QAR': '卡塔尔里亚尔',
+                'KWD': '科威特第纳尔', 'BHD': '巴林第纳尔', 'OMR': '阿曼里亚尔', 'ILS': '以色列新谢克尔'
+            },
+            "非洲": {
+                'ZAR': '南非兰特', 'EGP': '埃及镑', 'MAD': '摩洛哥迪拉姆',
+                'KES': '肯尼亚先令', 'NGN': '尼日利亚奈拉'
             }
         };
 
@@ -141,14 +163,42 @@
             'JPY': 'Asia/Tokyo', 'KRW': 'Asia/Seoul',
             'SGD': 'Asia/Singapore', 'THB': 'Asia/Bangkok', 'VND': 'Asia/Ho_Chi_Minh', 'MYR': 'Asia/Kuala_Lumpur',
             'IDR': 'Asia/Jakarta', 'PHP': 'Asia/Manila',
+            'KHR': 'Asia/Phnom_Penh', 'LAK': 'Asia/Vientiane', 'MNT': 'Asia/Ulaanbaatar',
+            'KZT': 'Asia/Almaty', 'UZS': 'Asia/Tashkent', 'KGS': 'Asia/Bishkek',
+            'TJS': 'Asia/Dushanbe', 'TMT': 'Asia/Ashgabat',
+            'INR': 'Asia/Kolkata', 'PKR': 'Asia/Karachi', 'BDT': 'Asia/Dhaka',
+            'LKR': 'Asia/Colombo', 'NPR': 'Asia/Kathmandu',
             'EUR': 'Europe/Berlin', 'GBP': 'Europe/London', 'CHF': 'Europe/Zurich', 'PLN': 'Europe/Warsaw',
             'SEK': 'Europe/Stockholm', 'NOK': 'Europe/Oslo', 'DKK': 'Europe/Copenhagen', 'HUF': 'Europe/Budapest',
             'CZK': 'Europe/Prague', 'TRY': 'Europe/Istanbul',
+            'RUB': 'Europe/Moscow', 'RON': 'Europe/Bucharest', 'ISK': 'Atlantic/Reykjavik',
             'USD': 'America/New_York', 'CAD': 'America/Toronto', 'MXN': 'America/Mexico_City',
             'BRL': 'America/Sao_Paulo', 'ARS': 'America/Argentina/Buenos_Aires', 'CLP': 'America/Santiago', 'COP': 'America/Bogota',
+            'PEN': 'America/Lima',
             'AUD': 'Australia/Sydney', 'NZD': 'Pacific/Auckland', 'FJD': 'Pacific/Fiji',
-            'AED': 'Asia/Dubai', 'SAR': 'Asia/Riyadh', 'ZAR': 'Africa/Johannesburg', 'EGP': 'Africa/Cairo'
+            'AED': 'Asia/Dubai', 'SAR': 'Asia/Riyadh', 'QAR': 'Asia/Qatar', 'KWD': 'Asia/Kuwait',
+            'BHD': 'Asia/Bahrain', 'OMR': 'Asia/Muscat', 'ILS': 'Asia/Jerusalem',
+            'ZAR': 'Africa/Johannesburg', 'EGP': 'Africa/Cairo', 'MAD': 'Africa/Casablanca',
+            'KES': 'Africa/Nairobi', 'NGN': 'Africa/Lagos'
         };
+
+        function getRate(currency) {
+            const rate = rates[currency.toLowerCase()];
+            return Number.isFinite(rate) && rate > 0 ? rate : null;
+        }
+
+        // 大额苏姆、基普等在窄屏上也尽量完整显示。
+        const amountMeasureContext = document.createElement('canvas').getContext('2d');
+        function fitAmount(input) {
+            if (!amountMeasureContext || !input.clientWidth) return;
+            const style = getComputedStyle(input);
+            amountMeasureContext.font = `700 24px ${style.fontFamily}`;
+            const textWidth = amountMeasureContext.measureText(input.value || '0').width;
+            const available = input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 2;
+            input.style.fontSize = `${Math.max(12, Math.min(24, 24 * available / textWidth))}px`;
+        }
+
+        window.addEventListener('resize', () => document.querySelectorAll('input').forEach(fitAmount));
 
         function getLocalTime(currency) {
             const tz = timeZoneMap[currency];
@@ -179,21 +229,19 @@
             const fallback = 'https://latest.currency-api.pages.dev/v1/currencies/usd.json';
             
             try {
-                let res;
+                let data;
                 try {
-                    res = await fetch(primary);
-                    if (!res.ok) throw new Error('Primary failed');
+                    data = await requestRates(primary);
                 } catch (e) {
-                    res = await fetch(fallback);
+                    data = await requestRates(fallback);
                 }
-                
-                const data = await res.json();
                 rates = data.usd; 
                 
                 localStorage.setItem('cachedRates', JSON.stringify(rates));
                 
                 const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                 document.getElementById('meta-info').innerText = `上次刷新: ${now} · 数据源: fawazahmed0`;
+                document.getElementById('status-text').innerText = '左滑添加 · 右滑删除';
                 
                 renderCards();
             } catch (err) {
@@ -204,6 +252,22 @@
                     document.getElementById('status-text').innerText = '数据同步失败';
                     document.getElementById('meta-info').innerText = '首次加载需要网络，请检查网络连接';
                 }
+            }
+        }
+
+        async function requestRates(url) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+            try {
+                const res = await fetch(url, { signal: controller.signal });
+                if (!res.ok) throw new Error('Rate request failed');
+                const data = await res.json();
+                if (!data || !data.usd || data.usd.usd !== 1) {
+                    throw new Error('Invalid USD rate table');
+                }
+                return data;
+            } finally {
+                clearTimeout(timeout);
             }
         }
 
@@ -219,9 +283,8 @@
             container.innerHTML = '';
             
             activeCards.forEach(currency => {
-                const rateKey = currency.toLowerCase();
-                const rateToUSD = rates[rateKey] || 1;
-                const displayValue = (baseUSDValue * rateToUSD).toFixed(2);
+                const rateToUSD = getRate(currency);
+                const displayValue = rateToUSD === null ? '' : (baseUSDValue * rateToUSD).toFixed(2);
                 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'swipe-wrapper';
@@ -240,6 +303,8 @@
                         <div class="input-wrapper">
                             <input type="number" inputmode="decimal" 
                                    data-currency="${currency}" 
+                                   aria-label="${currency} 金额"
+                                   ${rateToUSD === null ? 'disabled placeholder="汇率暂不可用"' : ''}
                                    value="${displayValue}">
                         </div>
                     </div>
@@ -250,9 +315,11 @@
             });
 
             document.querySelectorAll('input').forEach(input => {
+                fitAmount(input);
                 input.addEventListener('input', handleInput);
                 input.addEventListener('focus', function() { 
                     this.value = ''; 
+                    fitAmount(this);
                     document.querySelectorAll('.card-content').forEach(c => c.style.transform = 'translateX(0)');
                 });
                 input.addEventListener('blur', function() {
@@ -264,16 +331,21 @@
         function handleInput(e) {
             const currency = e.target.getAttribute('data-currency').toLowerCase();
             const value = parseFloat(e.target.value);
-            if (isNaN(value)) return;
+            const rate = getRate(currency);
+            if (!Number.isFinite(value) || rate === null) return;
 
-            baseUSDValue = value / rates[currency];
+            const nextBaseValue = value / rate;
+            if (!Number.isFinite(nextBaseValue)) return;
+            baseUSDValue = nextBaseValue;
             localStorage.setItem('savedBaseValue', baseUSDValue);
 
             document.querySelectorAll('input').forEach(input => {
                 const targetCurrency = input.getAttribute('data-currency').toLowerCase();
                 if (targetCurrency !== currency) {
-                    input.value = (baseUSDValue * rates[targetCurrency]).toFixed(2);
+                    const targetRate = getRate(targetCurrency);
+                    input.value = targetRate === null ? '' : (baseUSDValue * targetRate).toFixed(2);
                 }
+                fitAmount(input);
             });
         }
 
